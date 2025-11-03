@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cata VR - Gorrión Wine Experience</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <!-- 🌄 Fondo 360° local -->
+      <a-sky src="vino.jpg" rotation="0 -90 0"></a-sky>
+
+      <!-- 💡 Luz ambiental -->
+      <a-entity light="type: ambient; color: #FFF"></a-entity>
+
+      <!-- 📝 Texto de bienvenida -->
+      <a-text
+        value="🍷 Bienvenido a la Cata VR Gorrión Wine Experience 🍇"
+        align="center"
+        color="#ffffff"
+        position="0 2 -3"
+        width="6">
+      </a-text>
+
+      <!-- 🔘 Punto interactivo (reproduce audio al mirar) -->
+      <a-sphere
+        id="boton-cata"
+        position="0 1.5 -3"
+        radius="0.25"
+        color="#9b2b2b"
+        event-set__enter="_event: mouseenter; color: #d45b5b"
+        event-set__leave="_event: mouseleave; color: #9b2b2b"
+        sound="on: click; src: #audio-cata">
+      </a-sphere>
+
+      <!-- 👁️ Texto guía -->
+      <a-text
+        value="Mira el círculo para comenzar la cata"
+        align="center"
+        color="#fff"
+        position="0 0.9 -3"
+        width="4">
+      </a-text>
+
+      <!-- 🎧 Audio local o de prueba -->
+      <audio id="audio-cata" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_aa4f7c59ed.mp3?filename=wine-pour-23695.mp3"></audio>
+
+      <!-- 🎯 Cámara y cursor -->
+      <a-entity camera look-controls>
+        <a-cursor
+          fuse="true"
+          fuse-timeout="1500"
+          material="color: white; shader: flat">
+        </a-cursor>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
