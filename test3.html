@@ -8,7 +8,6 @@
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-    <!-- Estilos simples -->
     <style>
       body {
         margin: 0;
@@ -37,17 +36,13 @@
   </head>
 
   <body>
-    <!-- Escena A-Frame -->
     <a-scene
       vr-mode-ui="enabled: true"
       embedded
       loading-screen="dotsColor: #9b2b2b; backgroundColor: black"
     >
       <!-- Fondo 360° -->
-      <a-sky
-        src="playa.jpg"
-        rotation="0 -90 0"
-      ></a-sky>
+      <a-sky src="playa.jpg" rotation="0 -90 0"></a-sky>
 
       <!-- Luz ambiental -->
       <a-entity light="type: ambient; color: #FFF"></a-entity>
@@ -72,7 +67,6 @@
         sound="on: click; src: #audio-cata"
       ></a-sphere>
 
-      <!-- Texto guía -->
       <a-text
         value="Mira el círculo para comenzar la cata"
         align="center"
@@ -97,27 +91,22 @@
       </a-entity>
     </a-scene>
 
-    <!-- Botón de entrada VR -->
     <button id="enter-vr-btn">Entrar en modo VR</button>
 
     <script>
       const scene = document.querySelector("a-scene");
       const vrButton = document.getElementById("enter-vr-btn");
 
-      // Cuando el usuario pulse el botón, entra en modo VR/Cardboard
       vrButton.addEventListener("click", () => {
         if (scene && scene.enterVR) {
           scene.enterVR();
-          vrButton.style.display = "none"; // Oculta el botón
+          vrButton.style.display = "none";
         }
       });
 
-      // Si el usuario sale del modo VR, muestra de nuevo el botón
       scene.addEventListener("exit-vr", () => {
         vrButton.style.display = "block";
       });
     </script>
   </body>
 </html>
-
-
