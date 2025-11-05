@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cata VR - Gorrión Wine Experience</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+    <!-- Estilos simples -->
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: black;
+        font-family: sans-serif;
+      }
+      #enter-vr-btn {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #9b2b2b;
+        color: white;
+        border: none;
+        padding: 14px 22px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        z-index: 999;
+      }
+      #enter-vr-btn:hover {
+        background-color: #d45b5b;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Escena A-Frame -->
+    <a-scene
+      vr-mode-ui="enabled: true"
+      embedded
+      loading-screen="dotsColor: #9b2b2b; backgroundColor: black"
+    >
+      <!-- Fondo 360° -->
+      <a-sky
+        src="https://cdn.aframe.io/360-image-gallery-boilerplate/img/sechelt.jpg"
+        rotation="0 -90 0"
+      ></a-sky>
+
+      <!-- Luz ambiental -->
+      <a-entity light="type: ambient; color: #FFF"></a-entity>
+
+      <!-- Texto de bienvenida -->
+      <a-text
+        value="🍷 Bienvenido a la Cata VR Gorrión Wine Experience 🍇"
+        align="center"
+        color="#ffffff"
+        position="0 2 -3"
+        width="6"
+      ></a-text>
+
+      <!-- Punto interactivo -->
+      <a-sphere
+        id="boton-cata"
+        position="0 1.5 -3"
+        radius="0.25"
+        color="#9b2b2b"
+        event-set__enter="_event: mouseenter; color: #d45b5b"
+        event-set__leave="_event: mouseleave; color: #9b2b2b"
+        sound="on: click; src: #audio-cata"
+      ></a-sphere>
+
+      <!-- Texto guía -->
+      <a-text
+        value="Mira el círculo para comenzar la cata"
+        align="center"
+        color="#fff"
+        position="0 0.9 -3"
+        width="4"
+      ></a-text>
+
+      <!-- Audio -->
+      <audio
+        id="audio-cata"
+        src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_aa4f7c59ed.mp3?filename=wine-pour-23695.mp3"
+      ></audio>
+
+      <!-- Cámara + Cursor -->
+      <a-entity camera look-controls>
+        <a-cursor
+          fuse="true"
+          fuse-timeout="1500"
+          material="color: white; shader: flat"
+        ></a-cursor>
+      </a-entity>
+    </a-scene>
+
+    <!-- Botón de entrada VR -->
+    <button id="enter-vr-btn">Entrar en modo VR</button>
+
+    <script>
+      const scene = document.querySelector("a-scene");
+      const vrButton = document.getElementById("enter-vr-btn");
+
+      // Cuando el usuario pulse el botón, entra en modo VR/Cardboard
+      vrButton.addEventListener("click", () => {
+        if (scene && scene.enterVR) {
+          scene.enterVR();
+          vrButton.style.display = "none"; // Oculta el botón
+        }
+      });
+
+      // Si el usuario sale del modo VR, muestra de nuevo el botón
+      scene.addEventListener("exit-vr", () => {
+        vrButton.style.display = "block";
+      });
+    </script>
+  </body>
+</html>
