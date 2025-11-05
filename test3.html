@@ -5,7 +5,7 @@
     <title>Cata VR - Gorrión Wine Experience</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- A-Frame (versión compatible con WebXR Viewer) -->
+    <!-- A-Frame (compatible con WebXR Viewer) -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
     <style>
@@ -41,21 +41,28 @@
       loading-screen="dotsColor: #9b2b2b; backgroundColor: black"
     >
       <!-- Fondo 360° -->
-      <a-sky src="nieve2.jpg" rotation="0 -90 0" material="shader: flat; side: back;"></a-sky>
+      <a-sky
+        src="playa.jpg"
+        rotation="0 -90 0"
+        material="shader: flat; side: back;"
+      ></a-sky>
 
       <!-- Luz ambiental -->
       <a-entity light="type: ambient; color: #FFF"></a-entity>
 
-      <!-- Texto de bienvenida -->
+      <!-- Texto de bienvenida flotante -->
       <a-text
+        id="texto-bienvenida"
         value="🍷 Bienvenido a la Cata VR Gorrión Wine Experience 🍇"
         align="center"
         color="#ffffff"
         position="0 2 -3"
         width="6"
+        opacity="1"
+        animation__flotar="property: position; dir: alternate; dur: 4000; easing: easeInOutSine; loop: true; to: 0 2.2 -3"
       ></a-text>
 
-      <!-- Punto interactivo -->
+      <!-- Punto interactivo animado -->
       <a-sphere
         id="boton-cata"
         position="0 1.5 -3"
@@ -63,7 +70,8 @@
         color="#9b2b2b"
         event-set__enter="_event: mouseenter; color: #d45b5b"
         event-set__leave="_event: mouseleave; color: #9b2b2b"
-        sound="on: click; src: #audio-cata"
+        sound="on: click; src: #audio-narracion"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear"
       ></a-sphere>
 
       <!-- Texto guía -->
@@ -75,10 +83,17 @@
         width="4"
       ></a-text>
 
-      <!-- Audio -->
+      <!-- Audio narración cinematográfica (voz + viñedo + música) -->
       <audio
-        id="audio-cata"
-        src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_aa4f7c59ed.mp3?filename=wine-pour-23695.mp3"
+        id="audio-narracion"
+        src="https://cdn.gorrionwineexperience.com/audio/cata-puglia-bienvenida.mp3"
+      ></audio>
+
+      <!-- Audio ambiental de bodega -->
+      <audio
+        id="audio-ambiente"
+        src="https://cdn.pixabay.com/download/audio/2023/04/10/audio_ae937425e9.mp3?filename=wine-cellar-ambient-143397.mp3"
+        loop
       ></audio>
 
       <!-- Cámara + Cursor -->
@@ -97,26 +112,45 @@
     <script>
       const scene = document.querySelector("a-scene");
       const vrButton = document.getElementById("enter-vr-btn");
+      const ambientAudio = document.getElementById("audio-ambiente");
+      const narration = document.getElementById("audio-narracion");
+      const textoBienvenida = document.getElementById("texto-bienvenida");
 
-      // Detectar si el usuario está en WebXR Viewer
       const isWebXRViewer = /WebXRViewer/i.test(navigator.userAgent);
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // Si no está en WebXR Viewer ni Android, ocultar el botón VR
       if (!isWebXRViewer && isIOS) {
         vrButton.textContent =
           "Modo VR no disponible en Safari iPhone. Usa WebXR Viewer 📱";
       }
 
-      vrButton.addEventListener("click", () => {
+      // Al entrar en VR: iniciar sonidos y texto
+      vrButton.addEventListener("click", async () => {
+        try {
+          await ambientAudio.play();
+          await narration.play();
+        } catch (err) {
+          console.log("Audio bloqueado hasta interacción:", err);
+        }
         if (scene && scene.enterVR) {
           scene.enterVR();
           vrButton.style.display = "none";
         }
+
+        // Al terminar la narración, hacer fade del texto
+        narration.addEventListener("ended", () => {
+          textoBienvenida.setAttribute(
+            "animation__fade",
+            "property: opacity; from: 1; to: 0; dur: 3000; easing: easeInOutQuad"
+          );
+        });
       });
 
+      // Detener sonido al salir de VR
       scene.addEventListener("exit-vr", () => {
         vrButton.style.display = "block";
+        ambientAudio.pause();
+        narration.pause();
       });
     </script>
   </body>
