@@ -5,8 +5,8 @@
     <title>Cata VR - Gorrión Wine Experience</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- A-Frame -->
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <!-- A-Frame (versión compatible con WebXR Viewer) -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
     <style>
       body {
@@ -38,11 +38,10 @@
   <body>
     <a-scene
       vr-mode-ui="enabled: true"
-      embedded
       loading-screen="dotsColor: #9b2b2b; backgroundColor: black"
     >
       <!-- Fondo 360° -->
-      <a-sky src="nieve2.jpg" rotation="0 -90 0" material="shader: flat; npot: true; mipmap: false"></a-sky>
+      <a-sky src="nieve2.jpg" rotation="0 -90 0" material="shader: flat; side: back;"></a-sky>
 
       <!-- Luz ambiental -->
       <a-entity light="type: ambient; color: #FFF"></a-entity>
@@ -67,6 +66,7 @@
         sound="on: click; src: #audio-cata"
       ></a-sphere>
 
+      <!-- Texto guía -->
       <a-text
         value="Mira el círculo para comenzar la cata"
         align="center"
@@ -82,7 +82,7 @@
       ></audio>
 
       <!-- Cámara + Cursor -->
-      <a-entity camera look-controls>
+      <a-entity camera look-controls="magicWindowTrackingEnabled: true">
         <a-cursor
           fuse="true"
           fuse-timeout="1500"
@@ -91,11 +91,22 @@
       </a-entity>
     </a-scene>
 
+    <!-- Botón de entrada a modo VR -->
     <button id="enter-vr-btn">Entrar en modo VR</button>
 
     <script>
       const scene = document.querySelector("a-scene");
       const vrButton = document.getElementById("enter-vr-btn");
+
+      // Detectar si el usuario está en WebXR Viewer
+      const isWebXRViewer = /WebXRViewer/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      // Si no está en WebXR Viewer ni Android, ocultar el botón VR
+      if (!isWebXRViewer && isIOS) {
+        vrButton.textContent =
+          "Modo VR no disponible en Safari iPhone. Usa WebXR Viewer 📱";
+      }
 
       vrButton.addEventListener("click", () => {
         if (scene && scene.enterVR) {
@@ -110,6 +121,3 @@
     </script>
   </body>
 </html>
-
-
-
