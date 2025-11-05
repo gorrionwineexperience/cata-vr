@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cata VR Gorrión Wine Experience - Kuula Fullscreen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+    <!-- Etiquetas para modo "App Web" en iPhone -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cata VR Gorrión">
+    <link rel="apple-touch-icon" href="https://gorrionwineexperience.github.io/assets/icon.png">
+
+    <!-- Color de fondo para PWA -->
+    <meta name="theme-color" content="#000000" />
+
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background-color: #000;
+      }
+      iframe {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+      .mensaje-ios {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.6);
+        color: white;
+        font-family: sans-serif;
+        font-size: 14px;
+        padding: 8px 14px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- EMBED de tu tour Kuula -->
+    <iframe
+      src="https://kuula.co/embed/collection/7H0V4?fs=1&vr=0&zoom=1"
+      allowfullscreen
+      allow="xr-spatial-tracking; fullscreen; gyroscope; accelerometer; autoplay"
+    ></iframe>
+
+    <!-- Mensaje visible solo la primera vez en Safari iPhone -->
+    <div class="mensaje-ios" id="mensaje-ios">
+      📱 Para ver en pantalla completa: toca “Compartir” → “Añadir a pantalla de inicio”.
+    </div>
+
+    <script>
+      // Oculta el mensaje en Android o si ya se añadió como app
+      if (!/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        document.getElementById('mensaje-ios').style.display = 'none';
+      }
+      if (window.navigator.standalone) {
+        document.getElementById('mensaje-ios').style.display = 'none';
+      }
+    </script>
+  </body>
+</html>
