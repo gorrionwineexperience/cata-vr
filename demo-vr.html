@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Portal del Vino — Luz y Brisa</title>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #000;
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, rgba(30,45,70,0.92), rgba(0,0,0,0.96));
+      color: #fff;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .panel {
+      max-width: 420px;
+      padding: 24px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    p {
+      margin: 10px 0;
+      line-height: 1.5;
+      font-size: 15px;
+      opacity: 0.95;
+    }
+
+    button {
+      margin-top: 16px;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 22px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #f7d774;
+      color: #1a1a1a;
+    }
+
+    .mini {
+      font-size: 13px;
+      opacity: 0.75;
+    }
+
+    #hud {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 10;
+      min-width: 220px;
+      max-width: calc(100vw - 32px);
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.35;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    #hud.show {
+      opacity: 1;
+    }
+
+    #vrButton {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 12;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <div class="panel">
+      <h1>Luz y Brisa</h1>
+      <p>Portal inmersivo para el primer vino. Mira cada esfera durante 1,2 segundos para activarla.</p>
+      <p>Primero úsalo en modo normal. Cuando te funcione bien, pulsa <strong>Entrar en visor</strong> y mete el móvil en el Cardboard.</p>
+      <button id="startBtn">Comenzar experiencia</button>
+      <p class="mini">Consejo: Chrome en Android + móvil con giroscopio.</p>
+    </div>
+  </div>
+
+  <div id="hud"></div>
+  <button id="vrButton">Entrar en visor</button>
+
+  <a-scene renderer="colorManagement: true; antialias: true"
+           background="color: #BFE7FF"
+           vr-mode-ui="enabled: true"
+           device-orientation-permission-ui="enabled: true">
+
+    <a-assets>
+      <img id="skyGrad" alt="" src="data:image/svg+xml;utf8,
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 512'>
+        <defs>
+          <linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>
+            <stop offset='0%' stop-color='%2398d9ff'/>
+            <stop offset='55%' stop-color='%23dff4ff'/>
+            <stop offset='100%' stop-color='%23fff4cf'/>
+          </linearGradient>
+        </defs>
+        <rect width='1024' height='512' fill='url(%23g)'/>
+      </svg>">
+    </a-assets>
+
+    <a-sky src="#skyGrad" rotation="0 -90 0"></a-sky>
+
+    <a-entity id="rig" position="0 1.6 0">
+      <a-camera wasd-controls-enabled="false" look-controls="pointerLockEnabled: false">
+        <a-cursor id="cursor"
+                  color="#ffffff"
+                  fuse="true"
+                  fuse-timeout="1200"
+                  geometry="primitive: ring; radiusInner: 0.012; radiusOuter: 0.02"
+                  material="shader: flat; opacity: 0.9"
+                  position="0 0 -1"></a-cursor>
+      </a-camera>
+    </a-entity>
+
+    <a-plane rotation="-90 0 0" width="60" height="60" color="#97C97E"></a-plane>
+
+    <!-- Filas abstractas de viñedo -->
+    <a-entity id="vineRows">
+      <a-box position="-4 0.45 -6" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+      <a-box position="4 0.45 -9" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+      <a-box position="-4 0.45 -12" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+      <a-box position="4 0.45 -15" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+      <a-box position="-4 0.45 -18" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+    </a-entity>
+
+    <!-- Sol y partículas -->
+    <a-circle position="0 6 -20" radius="2.2" color="#FFEAA0" material="shader: flat; opacity: 0.95"></a-circle>
+    <a-entity id="particles"></a-entity>
+
+    <!-- Título inicial -->
+    <a-entity id="titleWrap" position="0 2.4 -3.2">
+      <a-plane width="2.8" height="1.2" color="#1E2A36" opacity="0.42"></a-plane>
+      <a-text value="LUZ Y BRISA\nBusca claridad" align="center" color="#FFF8DB" width="4.6" position="0 0 0.01"></a-text>
+    </a-entity>
+
+    <!-- Hotspots -->
+    <a-entity id="hotspot-citrico" class="hotspot clickable" visible="false" position="-1.8 1.9 -3.8"
+              geometry="primitive: sphere; radius: 0.24"
+              material="color: #FFD85A; emissive: #FFD85A; emissiveIntensity: 0.55; opacity: 0.92">
+      <a-text value="Citrico" align="center" color="#3a2a00" width="3.2" position="0 -0.46 0"></a-text>
+      <a-animation attribute="scale" direction="alternate" dur="1200" from="1 1 1" to="1.15 1.15 1.15" repeat="indefinite"></a-animation>
+    </a-entity>
+
+    <a-entity id="hotspot-floral" class="hotspot clickable" visible="false" position="0 2.6 -4.6"
+              geometry="primitive: sphere; radius: 0.24"
+              material="color: #FFFFFF; emissive: #FFFFFF; emissiveIntensity: 0.45; opacity: 0.9">
+      <a-text value="Floral" align="center" color="#444" width="3.2" position="0 -0.46 0"></a-text>
+      <a-animation attribute="scale" direction="alternate" dur="1400" from="1 1 1" to="1.15 1.15 1.15" repeat="indefinite"></a-animation>
+    </a-entity>
+
+    <a-entity id="hotspot-mineral" class="hotspot clickable" visible="false" position="1.9 1.4 -4.2"
+              geometry="primitive: sphere; radius: 0.24"
+              material="color: #B8E7FF; emissive: #B8E7FF; emissiveIntensity: 0.5; opacity: 0.92">
+      <a-text value="Mineral" align="center" color="#17384B" width="3.2" position="0 -0.46 0"></a-text>
+      <a-animation attribute="scale" direction="alternate" dur="1300" from="1 1 1" to="1.15 1.15 1.15" repeat="indefinite"></a-animation>
+    </a-entity>
+
+    <!-- Mensaje final -->
+    <a-entity id="endWrap" visible="false" position="0 2.2 -3.5">
+      <a-plane width="3.4" height="1.45" color="#17232E" opacity="0.52"></a-plane>
+      <a-text value="Quita el visor.\nAhora busca esa luz en la copa." align="center" color="#FFF8DB" width="4.8" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const overlay = document.getElementById('overlay');
+    const hud = document.getElementById('hud');
+    const vrButton = document.getElementById('vrButton');
+    const sceneEl = document.querySelector('a-scene');
+
+    const titleWrap = document.getElementById('titleWrap');
+    const endWrap = document.getElementById('endWrap');
+
+    const hotspots = [
+      {
+        id: 'hotspot-citrico',
+        title: 'Cítrico',
+        text: 'Piensa en piel de limón, en chispa y en filo fresco.'
+      },
+      {
+        id: 'hotspot-floral',
+        title: 'Floral',
+        text: 'Hay algo delicado aquí. Ligero. Casi suspendido.'
+      },
+      {
+        id: 'hotspot-mineral',
+        title: 'Mineral',
+        text: 'Una sensación limpia, seca y precisa.'
+      }
+    ];
+
+    let currentIndex = 0;
+    let discovered = 0;
+    let started = false;
+    let synthReady = 'speechSynthesis' in window;
+
+    function showHUD(text, ms = 2600) {
+      hud.innerHTML = text;
+      hud.classList.add('show');
+      clearTimeout(showHUD._timer);
+      showHUD._timer = setTimeout(() => hud.classList.remove('show'), ms);
+    }
+
+    function speak(text) {
+      if (!synthReady) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-ES';
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function revealNextHotspot() {
+      if (currentIndex >= hotspots.length) {
+        endScene();
+        return;
+      }
+      const el = document.getElementById(hotspots[currentIndex].id);
+      el.setAttribute('visible', true);
+      showHUD('Mira la esfera para descubrir la siguiente nota.', 1800);
+    }
+
+    function handleHotspotActivation(index) {
+      if (index !== currentIndex) return;
+      const data = hotspots[index];
+      const el = document.getElementById(data.id);
+      el.setAttribute('visible', false);
+      discovered += 1;
+      currentIndex += 1;
+      showHUD('<strong>' + data.title + '</strong><br>' + data.text, 3400);
+      speak(data.text);
+      setTimeout(revealNextHotspot, 1400);
+    }
+
+    function endScene() {
+      endWrap.setAttribute('visible', true);
+      showHUD('Portal completado. Quita el visor y sirve el vino.', 5000);
+      speak('Ahora quítate el visor. Busca esa luz en la copa.');
+    }
+
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 28; i += 1) {
+        const p = document.createElement('a-sphere');
+        const x = (Math.random() * 10 - 5).toFixed(2);
+        const y = (Math.random() * 4 + 1.8).toFixed(2);
+        const z = (-Math.random() * 16 - 4).toFixed(2);
+        const r = (Math.random() * 0.04 + 0.02).toFixed(2);
+        p.setAttribute('position', `${x} ${y} ${z}`);
+        p.setAttribute('radius', r);
+        p.setAttribute('material', 'color: #FFF8DB; opacity: 0.45; shader: flat');
+        p.setAttribute('animation', `property: position; dir: alternate; dur: ${2500 + Math.random()*2500}; loop: true; to: ${x} ${(parseFloat(y)+0.35).toFixed(2)} ${z}`);
+        container.appendChild(p);
+      }
+    }
+
+    function startExperience() {
+      if (started) return;
+      started = true;
+      overlay.style.display = 'none';
+      vrButton.style.display = 'block';
+      createParticles();
+
+      showHUD('Respira despacio. Busca claridad.', 2600);
+      speak('Respira despacio. Antes de probar este vino, entra en su mañana. Aquí todo empieza con luz, aire y frescura. No busques fuerza. Busca claridad.');
+
+      setTimeout(() => {
+        titleWrap.setAttribute('visible', false);
+        revealNextHotspot();
+      }, 4500);
+    }
+
+    startBtn.addEventListener('click', startExperience);
+
+    hotspots.forEach((h, index) => {
+      const el = document.getElementById(h.id);
+      el.addEventListener('click', () => handleHotspotActivation(index));
+    });
+
+    vrButton.addEventListener('click', () => {
+      if (sceneEl.enterVR) {
+        sceneEl.enterVR();
+      }
+    });
+  </script>
+</body>
+</html>
