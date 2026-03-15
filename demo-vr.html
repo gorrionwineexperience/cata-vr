@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Portal del Vino — Luz y Brisa</title>
+  <title>Portal del Vino — Android + Gafas</title>
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -13,230 +14,315 @@
       overflow: hidden;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #000;
+      color: #fff;
     }
+
+    * { box-sizing: border-box; }
 
     #overlay {
       position: fixed;
       inset: 0;
-      z-index: 20;
+      z-index: 30;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at center, rgba(30,45,70,0.92), rgba(0,0,0,0.96));
-      color: #fff;
-      text-align: center;
+      background: radial-gradient(circle at center, rgba(24,38,59,0.94), rgba(0,0,0,0.97));
       padding: 24px;
     }
 
     .panel {
-      max-width: 420px;
+      width: min(460px, 100%);
       padding: 24px;
-      border-radius: 20px;
+      border-radius: 24px;
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.14);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.4);
       backdrop-filter: blur(10px);
+      text-align: center;
     }
 
     h1 {
       margin: 0 0 10px;
-      font-size: 28px;
+      font-size: 30px;
       line-height: 1.1;
     }
 
     p {
       margin: 10px 0;
-      line-height: 1.5;
       font-size: 15px;
+      line-height: 1.5;
       opacity: 0.95;
     }
 
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
     button {
-      margin-top: 16px;
       border: 0;
       border-radius: 999px;
-      padding: 14px 22px;
+      padding: 14px 18px;
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
+    }
+
+    .primary {
       background: #f7d774;
-      color: #1a1a1a;
+      color: #201b10;
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.18);
     }
 
     .mini {
       font-size: 13px;
-      opacity: 0.75;
+      opacity: 0.72;
     }
 
     #hud {
       position: fixed;
       left: 50%;
-      bottom: 18px;
+      bottom: 16px;
       transform: translateX(-50%);
-      z-index: 10;
-      min-width: 220px;
+      z-index: 25;
+      min-width: 240px;
       max-width: calc(100vw - 32px);
-      padding: 10px 14px;
+      padding: 12px 16px;
       border-radius: 16px;
-      background: rgba(0,0,0,0.45);
-      color: #fff;
+      background: rgba(0,0,0,0.46);
       text-align: center;
-      font-size: 14px;
       line-height: 1.35;
-      pointer-events: none;
+      font-size: 14px;
       opacity: 0;
       transition: opacity 0.35s ease;
+      pointer-events: none;
     }
 
-    #hud.show {
-      opacity: 1;
-    }
+    #hud.show { opacity: 1; }
 
-    #vrButton {
+    #badge {
       position: fixed;
       top: 16px;
-      right: 16px;
-      z-index: 12;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.12);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.18);
-      padding: 10px 14px;
-      font-size: 14px;
-      font-weight: 700;
+      left: 16px;
+      z-index: 25;
       display: none;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.14);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .mode {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: #000;
+    }
+
+    .mode.active {
+      display: block;
+    }
+
+    #monoContainer a-scene {
+      width: 100%;
+      height: 100%;
+    }
+
+    #stereoContainer {
+      display: none;
+      flex-direction: row;
+    }
+
+    #stereoContainer.active {
+      display: flex;
+    }
+
+    .eye {
+      width: 50vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      border-right: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .eye:last-child {
+      border-right: 0;
+    }
+
+    .eye a-scene {
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
 <body>
   <div id="overlay">
     <div class="panel">
-      <h1>Luz y Brisa</h1>
-      <p>Portal inmersivo para el primer vino. Mira cada esfera durante 1,2 segundos para activarla.</p>
-      <p>Primero úsalo en modo normal. Cuando te funcione bien, pulsa <strong>Entrar en visor</strong> y mete el móvil en el Cardboard.</p>
-      <button id="startBtn">Comenzar experiencia</button>
-      <p class="mini">Consejo: Chrome en Android + móvil con giroscopio.</p>
+      <h1>Portal del vino</h1>
+      <p>Versión pensada para <strong>Android + gafas pasivas para móvil</strong>, sin QR y sin VR nativa.</p>
+      <p>Primero pruébalo en normal. Si te encaja, usa <strong>Modo gafas</strong> para abrir dos vistas izquierda/derecha y meter el móvil en el visor.</p>
+      <div class="actions">
+        <button id="startNormal" class="secondary">Probar normal</button>
+        <button id="startGlasses" class="primary">Modo gafas Android</button>
+      </div>
+      <p class="mini">Consejo: Chrome en Android, pantalla horizontal y brillo alto.</p>
     </div>
   </div>
 
+  <div id="badge"></div>
   <div id="hud"></div>
-  <button id="vrButton">Entrar en visor</button>
 
-  <a-scene renderer="colorManagement: true; antialias: true"
-           background="color: #BFE7FF"
-           vr-mode-ui="enabled: true"
-           device-orientation-permission-ui="enabled: true">
+  <div id="monoContainer" class="mode"></div>
 
-    <a-assets>
-      <img id="skyGrad" alt="" src="data:image/svg+xml;utf8,
-      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 512'>
-        <defs>
-          <linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>
-            <stop offset='0%' stop-color='%2398d9ff'/>
-            <stop offset='55%' stop-color='%23dff4ff'/>
-            <stop offset='100%' stop-color='%23fff4cf'/>
-          </linearGradient>
-        </defs>
-        <rect width='1024' height='512' fill='url(%23g)'/>
-      </svg>">
-    </a-assets>
-
-    <a-sky src="#skyGrad" rotation="0 -90 0"></a-sky>
-
-    <a-entity id="rig" position="0 1.6 0">
-      <a-camera wasd-controls-enabled="false" look-controls="pointerLockEnabled: false">
-        <a-cursor id="cursor"
-                  color="#ffffff"
-                  fuse="true"
-                  fuse-timeout="1200"
-                  geometry="primitive: ring; radiusInner: 0.012; radiusOuter: 0.02"
-                  material="shader: flat; opacity: 0.9"
-                  position="0 0 -1"></a-cursor>
-      </a-camera>
-    </a-entity>
-
-    <a-plane rotation="-90 0 0" width="60" height="60" color="#97C97E"></a-plane>
-
-    <!-- Filas abstractas de viñedo -->
-    <a-entity id="vineRows">
-      <a-box position="-4 0.45 -6" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
-      <a-box position="4 0.45 -9" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
-      <a-box position="-4 0.45 -12" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
-      <a-box position="4 0.45 -15" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
-      <a-box position="-4 0.45 -18" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
-    </a-entity>
-
-    <!-- Sol y partículas -->
-    <a-circle position="0 6 -20" radius="2.2" color="#FFEAA0" material="shader: flat; opacity: 0.95"></a-circle>
-    <a-entity id="particles"></a-entity>
-
-    <!-- Título inicial -->
-    <a-entity id="titleWrap" position="0 2.4 -3.2">
-      <a-plane width="2.8" height="1.2" color="#1E2A36" opacity="0.42"></a-plane>
-      <a-text value="LUZ Y BRISA\nBusca claridad" align="center" color="#FFF8DB" width="4.6" position="0 0 0.01"></a-text>
-    </a-entity>
-
-    <!-- Hotspots -->
-    <a-entity id="hotspot-citrico" class="hotspot clickable" visible="false" position="-1.8 1.9 -3.8"
-              geometry="primitive: sphere; radius: 0.24"
-              material="color: #FFD85A; emissive: #FFD85A; emissiveIntensity: 0.55; opacity: 0.92">
-      <a-text value="Citrico" align="center" color="#3a2a00" width="3.2" position="0 -0.46 0"></a-text>
-      <a-animation attribute="scale" direction="alternate" dur="1200" from="1 1 1" to="1.15 1.15 1.15" repeat="indefinite"></a-animation>
-    </a-entity>
-
-    <a-entity id="hotspot-floral" class="hotspot clickable" visible="false" position="0 2.6 -4.6"
-              geometry="primitive: sphere; radius: 0.24"
-              material="color: #FFFFFF; emissive: #FFFFFF; emissiveIntensity: 0.45; opacity: 0.9">
-      <a-text value="Floral" align="center" color="#444" width="3.2" position="0 -0.46 0"></a-text>
-      <a-animation attribute="scale" direction="alternate" dur="1400" from="1 1 1" to="1.15 1.15 1.15" repeat="indefinite"></a-animation>
-    </a-entity>
-
-    <a-entity id="hotspot-mineral" class="hotspot clickable" visible="false" position="1.9 1.4 -4.2"
-              geometry="primitive: sphere; radius: 0.24"
-              material="color: #B8E7FF; emissive: #B8E7FF; emissiveIntensity: 0.5; opacity: 0.92">
-      <a-text value="Mineral" align="center" color="#17384B" width="3.2" position="0 -0.46 0"></a-text>
-      <a-animation attribute="scale" direction="alternate" dur="1300" from="1 1 1" to="1.15 1.15 1.15" repeat="indefinite"></a-animation>
-    </a-entity>
-
-    <!-- Mensaje final -->
-    <a-entity id="endWrap" visible="false" position="0 2.2 -3.5">
-      <a-plane width="3.4" height="1.45" color="#17232E" opacity="0.52"></a-plane>
-      <a-text value="Quita el visor.\nAhora busca esa luz en la copa." align="center" color="#FFF8DB" width="4.8" position="0 0 0.01"></a-text>
-    </a-entity>
-  </a-scene>
+  <div id="stereoContainer" class="mode">
+    <div class="eye" id="leftMount"></div>
+    <div class="eye" id="rightMount"></div>
+  </div>
 
   <script>
-    const startBtn = document.getElementById('startBtn');
     const overlay = document.getElementById('overlay');
     const hud = document.getElementById('hud');
-    const vrButton = document.getElementById('vrButton');
-    const sceneEl = document.querySelector('a-scene');
+    const badge = document.getElementById('badge');
+    const monoContainer = document.getElementById('monoContainer');
+    const stereoContainer = document.getElementById('stereoContainer');
+    const startNormal = document.getElementById('startNormal');
+    const startGlasses = document.getElementById('startGlasses');
 
-    const titleWrap = document.getElementById('titleWrap');
-    const endWrap = document.getElementById('endWrap');
+    const scenePrefixes = ['mono', 'left', 'right'];
+    let activePrefixes = ['mono'];
+    let mode = 'mono';
+    let started = false;
+    let currentIndex = 0;
+    let synthReady = 'speechSynthesis' in window;
 
     const hotspots = [
       {
-        id: 'hotspot-citrico',
+        key: 'citrico',
         title: 'Cítrico',
         text: 'Piensa en piel de limón, en chispa y en filo fresco.'
       },
       {
-        id: 'hotspot-floral',
+        key: 'floral',
         title: 'Floral',
         text: 'Hay algo delicado aquí. Ligero. Casi suspendido.'
       },
       {
-        id: 'hotspot-mineral',
+        key: 'mineral',
         title: 'Mineral',
         text: 'Una sensación limpia, seca y precisa.'
       }
     ];
 
-    let currentIndex = 0;
-    let discovered = 0;
-    let started = false;
-    let synthReady = 'speechSynthesis' in window;
+    function sceneMarkup(prefix, eyeOffsetX = 0) {
+      return `
+        <a-scene
+          embedded
+          renderer="colorManagement: true; antialias: true"
+          background="color: #BFE7FF"
+          vr-mode-ui="enabled: false"
+          device-orientation-permission-ui="enabled: true"
+        >
+          <a-assets>
+            <img id="${prefix}-skyGrad" alt="" src="data:image/svg+xml;utf8,
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2048 1024'>
+              <defs>
+                <linearGradient id='sky' x1='0' y1='0' x2='0' y2='1'>
+                  <stop offset='0%' stop-color='%2389d2ff'/>
+                  <stop offset='55%' stop-color='%23dff5ff'/>
+                  <stop offset='100%' stop-color='%23fff1c8'/>
+                </linearGradient>
+              </defs>
+              <rect width='2048' height='1024' fill='url(%23sky)'/>
+              <circle cx='1480' cy='180' r='90' fill='%23ffe39a' opacity='0.95'/>
+            </svg>">
+            <img id="${prefix}-vineyardPano" alt="Panorámica real de viñedo" crossorigin="anonymous" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/NorCal2018_Artesa_Vineyards_Winery_Napa_Valley_DSCF2006.jpg/2560px-NorCal2018_Artesa_Vineyards_Winery_Napa_Valley_DSCF2006.jpg">
+          </a-assets>
+
+          <a-sky src="#${prefix}-skyGrad" rotation="0 -90 0"></a-sky>
+          <a-cylinder
+            position="0 3.1 0"
+            radius="28"
+            height="8.5"
+            open-ended="true"
+            segments-radial="80"
+            side="double"
+            material="src: #${prefix}-vineyardPano; side: back; shader: flat">
+          </a-cylinder>
+          <a-plane rotation="-90 0 0" width="60" height="60" color="#97C97E"></a-plane>
+
+          <a-box position="-4 0.45 -6" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+          <a-box position="4 0.45 -9" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+          <a-box position="-4 0.45 -12" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+          <a-box position="4 0.45 -15" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+          <a-box position="-4 0.45 -18" depth="0.2" height="0.9" width="8" color="#5E8B4A"></a-box>
+          <a-circle position="0 6 -20" radius="2.2" color="#FFEAA0" material="shader: flat; opacity: 0.95"></a-circle>
+          <a-entity id="${prefix}-particles"></a-entity>
+
+          <a-entity id="${prefix}-titleWrap" position="0 2.4 -3.2">
+            <a-plane width="2.9" height="1.2" color="#1E2A36" opacity="0.42"></a-plane>
+            <a-text value="LUZ Y BRISA\nBusca claridad" align="center" color="#FFF8DB" width="4.7" position="0 0 0.01"></a-text>
+          </a-entity>
+
+          <a-entity id="${prefix}-hotspot-citrico" class="hotspot clickable" data-key="citrico" visible="false" position="-1.8 1.9 -3.8"
+                    geometry="primitive: sphere; radius: 0.24"
+                    material="color: #FFD85A; emissive: #FFD85A; emissiveIntensity: 0.55; opacity: 0.92"
+                    event-set__enter="_event: mouseenter; scale: 1.18 1.18 1.18"
+                    event-set__leave="_event: mouseleave; scale: 1 1 1">
+            <a-text value="Cítrico" align="center" color="#3a2a00" width="3.2" position="0 -0.46 0"></a-text>
+            <a-animation attribute="scale" direction="alternate" dur="1200" from="1 1 1" to="1.12 1.12 1.12" repeat="indefinite"></a-animation>
+          </a-entity>
+
+          <a-entity id="${prefix}-hotspot-floral" class="hotspot clickable" data-key="floral" visible="false" position="0 2.6 -4.6"
+                    geometry="primitive: sphere; radius: 0.24"
+                    material="color: #FFFFFF; emissive: #FFFFFF; emissiveIntensity: 0.45; opacity: 0.9"
+                    event-set__enter="_event: mouseenter; scale: 1.18 1.18 1.18"
+                    event-set__leave="_event: mouseleave; scale: 1 1 1">
+            <a-text value="Floral" align="center" color="#444" width="3.2" position="0 -0.46 0"></a-text>
+            <a-animation attribute="scale" direction="alternate" dur="1400" from="1 1 1" to="1.12 1.12 1.12" repeat="indefinite"></a-animation>
+          </a-entity>
+
+          <a-entity id="${prefix}-hotspot-mineral" class="hotspot clickable" data-key="mineral" visible="false" position="1.9 1.4 -4.2"
+                    geometry="primitive: sphere; radius: 0.24"
+                    material="color: #B8E7FF; emissive: #B8E7FF; emissiveIntensity: 0.5; opacity: 0.92"
+                    event-set__enter="_event: mouseenter; scale: 1.18 1.18 1.18"
+                    event-set__leave="_event: mouseleave; scale: 1 1 1">
+            <a-text value="Mineral" align="center" color="#17384B" width="3.2" position="0 -0.46 0"></a-text>
+            <a-animation attribute="scale" direction="alternate" dur="1300" from="1 1 1" to="1.12 1.12 1.12" repeat="indefinite"></a-animation>
+          </a-entity>
+
+          <a-entity id="${prefix}-endWrap" visible="false" position="0 2.2 -3.5">
+            <a-plane width="3.5" height="1.48" color="#17232E" opacity="0.52"></a-plane>
+            <a-text value="Quita el visor.\nAhora busca esa luz en la copa." align="center" color="#FFF8DB" width="4.9" position="0 0 0.01"></a-text>
+          </a-entity>
+
+          <a-entity id="${prefix}-rig" position="${eyeOffsetX} 1.6 0">
+            <a-camera wasd-controls-enabled="false" look-controls="pointerLockEnabled: false">
+              <a-cursor
+                color="#ffffff"
+                fuse="true"
+                fuse-timeout="1200"
+                geometry="primitive: ring; radiusInner: 0.012; radiusOuter: 0.02"
+                material="shader: flat; opacity: 0.9"
+                position="0 0 -1">
+              </a-cursor>
+            </a-camera>
+          </a-entity>
+        </a-scene>
+      `;
+    }
+
+    monoContainer.innerHTML = sceneMarkup('mono', 0);
+    document.getElementById('leftMount').innerHTML = sceneMarkup('left', -0.03);
+    document.getElementById('rightMount').innerHTML = sceneMarkup('right', 0.03);
 
     function showHUD(text, ms = 2600) {
       hud.innerHTML = text;
@@ -255,36 +341,41 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    function revealNextHotspot() {
-      if (currentIndex >= hotspots.length) {
-        endScene();
-        return;
+    function requestFullscreen() {
+      const root = document.documentElement;
+      if (root.requestFullscreen) {
+        return root.requestFullscreen().catch(() => {});
       }
-      const el = document.getElementById(hotspots[currentIndex].id);
-      el.setAttribute('visible', true);
-      showHUD('Mira la esfera para descubrir la siguiente nota.', 1800);
+      return Promise.resolve();
     }
 
-    function handleHotspotActivation(index) {
-      if (index !== currentIndex) return;
-      const data = hotspots[index];
-      const el = document.getElementById(data.id);
-      el.setAttribute('visible', false);
-      discovered += 1;
-      currentIndex += 1;
-      showHUD('<strong>' + data.title + '</strong><br>' + data.text, 3400);
-      speak(data.text);
-      setTimeout(revealNextHotspot, 1400);
+    async function lockLandscape() {
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock('landscape');
+        }
+      } catch (e) {}
     }
 
-    function endScene() {
-      endWrap.setAttribute('visible', true);
-      showHUD('Portal completado. Quita el visor y sirve el vino.', 5000);
-      speak('Ahora quítate el visor. Busca esa luz en la copa.');
+    function setBadge(text) {
+      badge.textContent = text;
+      badge.style.display = 'block';
     }
 
-    function createParticles() {
-      const container = document.getElementById('particles');
+    function entity(prefix, suffix) {
+      return document.getElementById(`${prefix}-${suffix}`);
+    }
+
+    function setVisibleForActive(suffix, isVisible) {
+      activePrefixes.forEach(prefix => {
+        const el = entity(prefix, suffix);
+        if (el) el.setAttribute('visible', isVisible);
+      });
+    }
+
+    function createParticles(prefix) {
+      const container = entity(prefix, 'particles');
+      if (!container || container.children.length) return;
       for (let i = 0; i < 28; i += 1) {
         const p = document.createElement('a-sphere');
         const x = (Math.random() * 10 - 5).toFixed(2);
@@ -299,34 +390,81 @@
       }
     }
 
-    function startExperience() {
-      if (started) return;
-      started = true;
-      overlay.style.display = 'none';
-      vrButton.style.display = 'block';
-      createParticles();
+    function resetScene() {
+      currentIndex = 0;
+      ['titleWrap', 'endWrap'].forEach(suffix => setVisibleForActive(suffix, suffix === 'titleWrap'));
+      hotspots.forEach(h => setVisibleForActive(`hotspot-${h.key}`, false));
+    }
 
+    function revealNextHotspot() {
+      if (currentIndex >= hotspots.length) {
+        endScene();
+        return;
+      }
+      const current = hotspots[currentIndex];
+      setVisibleForActive(`hotspot-${current.key}`, true);
+      showHUD('Mira la esfera para descubrir la siguiente nota.', 1800);
+    }
+
+    function handleHotspotActivation(key) {
+      const current = hotspots[currentIndex];
+      if (!current || current.key !== key) return;
+      setVisibleForActive(`hotspot-${key}`, false);
+      showHUD(`<strong>${current.title}</strong><br>${current.text}`, 3400);
+      speak(current.text);
+      currentIndex += 1;
+      setTimeout(revealNextHotspot, 1400);
+    }
+
+    function endScene() {
+      setVisibleForActive('endWrap', true);
+      showHUD('Portal completado. Quita el visor y sirve el vino.', 5000);
+      speak('Ahora quítate el visor. Busca esa luz en la copa.');
+    }
+
+    function attachHotspots(prefix) {
+      hotspots.forEach(h => {
+        const el = entity(prefix, `hotspot-${h.key}`);
+        if (!el) return;
+        el.addEventListener('click', () => handleHotspotActivation(h.key));
+      });
+    }
+
+    scenePrefixes.forEach(prefix => {
+      createParticles(prefix);
+      attachHotspots(prefix);
+    });
+
+    async function startExperience(nextMode) {
+      if (started && mode === nextMode) return;
+      started = true;
+      mode = nextMode;
+      activePrefixes = mode === 'stereo' ? ['left', 'right'] : ['mono'];
+
+      monoContainer.classList.toggle('active', mode === 'mono');
+      stereoContainer.classList.toggle('active', mode === 'stereo');
+      overlay.style.display = 'none';
+
+      if (mode === 'stereo') {
+        setBadge('Modo gafas activo');
+        await requestFullscreen();
+        await lockLandscape();
+      } else {
+        setBadge('Modo normal');
+      }
+
+      resetScene();
       showHUD('Respira despacio. Busca claridad.', 2600);
       speak('Respira despacio. Antes de probar este vino, entra en su mañana. Aquí todo empieza con luz, aire y frescura. No busques fuerza. Busca claridad.');
 
       setTimeout(() => {
-        titleWrap.setAttribute('visible', false);
+        setVisibleForActive('titleWrap', false);
         revealNextHotspot();
-      }, 4500);
+      }, 4200);
     }
 
-    startBtn.addEventListener('click', startExperience);
-
-    hotspots.forEach((h, index) => {
-      const el = document.getElementById(h.id);
-      el.addEventListener('click', () => handleHotspotActivation(index));
-    });
-
-    vrButton.addEventListener('click', () => {
-      if (sceneEl.enterVR) {
-        sceneEl.enterVR();
-      }
-    });
+    startNormal.addEventListener('click', () => startExperience('mono'));
+    startGlasses.addEventListener('click', () => startExperience('stereo'));
   </script>
 </body>
 </html>
